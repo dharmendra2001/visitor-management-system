@@ -1,0 +1,400 @@
+{
+  "info": {
+    "_postman_id": "b7b25e79-8809-42b4-a212-e889d533fa12",
+    "name": "Visitor Management System API",
+    "description": "Postman collection for testing Authentication, Visitor Management, and Approval workflows in the Visitor Management System API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Login (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var json = pm.response.json();",
+                  "    if (json.data && json.data.accessToken) {",
+                  "        pm.environment.set('authToken', json.data.accessToken);",
+                  "        console.log('Auth Token set:', json.data.accessToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@vms.com\",\n  \"password\": \"Admin@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticate as Admin and automatically save accessToken to environment variable."
+          }
+        },
+        {
+          "name": "Login (Receptionist)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"receptionist@vms.com\",\n  \"password\": \"Staff@123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Register New Staff/User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Suresh Menon\",\n  \"email\": \"suresh.menon@vms.com\",\n  \"password\": \"Menon@123\",\n  \"role\": \"HOST\",\n  \"department\": \"Product Engineering\",\n  \"phone\": \"+91-9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get Current Logged-in User (/auth/me)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Visitor Management",
+      "item": [
+        {
+          "name": "Create Visitor (Check-In)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Rohan Gupta\",\n  \"email\": \"rohan.gupta@tcs.com\",\n  \"phone\": \"+91-9890123456\",\n  \"company\": \"Tata Consultancy Services\",\n  \"purpose\": \"Sprint Planning & Architecture Discussion\",\n  \"hostUserId\": 3,\n  \"badgeNumber\": \"V-105\",\n  \"notes\": \"Needs guest Wi-Fi access\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visitors",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors"]
+            }
+          }
+        },
+        {
+          "name": "Get All Visitors (Paginated & Filtered)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/visitors?page=1&limit=10&status=PENDING",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "status", "value": "PENDING" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Search Visitors by Keyword",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/visitors?search=Rohan",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors"],
+              "query": [
+                { "key": "search", "value": "Rohan" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Visitor Details by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/visitors/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Visitor Details",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"company\": \"TCS Digital Solutions\",\n  \"notes\": \"Moved to 3rd Floor Boardroom\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visitors/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Visitor (Admin only)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/visitors/4",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors", "4"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Visitor Approval Workflow",
+      "item": [
+        {
+          "name": "Approve Visitor",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\",\n  \"badgeNumber\": \"V-105\",\n  \"notes\": \"Host verified and visitor pass issued at reception\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visitors/1/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors", "1", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Reject Visitor",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"REJECTED\",\n  \"rejectionReason\": \"Host unavailable and identity documents could not be verified by security team\",\n  \"notes\": \"Advised to visit with prior appointment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/visitors/1/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["visitors", "1", "approve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Users & Staff Management",
+      "item": [
+        {
+          "name": "List All Users (or Hosts)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?role=HOST",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                { "key": "role", "value": "HOST" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Details by ID",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{authToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
